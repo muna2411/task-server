@@ -33,18 +33,56 @@ async function run() {
     // await client.db("admin").command({ ping: 1 });
     // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     const userCollection = client.db("task").collection("user");
-
+    const menuCollection = client.db("task").collection("menu");
 
 
     app.get('/', (req, res) => {
         res.send('task management')
       })
 
+//menu
+app.get('/menu' , async(req,res) =>{
+  const result = await menuCollection.find().toArray();
+  res.send(result);
+})
+
+// app.get('/menu/:email' , async(req,res) =>{
+//   const email = req.query.email;
+//   const query = {email: email};
+//   const result = await menuCollection.find(query).toArray();
+//   res.send(result);
+// })
+
+app.post('/menu' , async(req,res) =>{
+const menu= req.body;
+console.log('new menu : ' , menu);
+const result = await menuCollection.insertOne(menu);
+res.send(result);
+})
 
 
+app.put('/menu/:id', async (req, res) => {
+  const item = req.body;
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id) }
+  const options = {upsert:true} 
+  const updatedDoc = {
+    $set: {
+      name: item.name,
+      description: item.description,
+      ratings: item.ratings
+    }
+  }
+  const result = await menuCollection.updateOne(filter, updatedDoc ,options);
+  res.send(result);
+})
 
-
-
+app.delete('/menu/:id' , async(req,res) => {
+const id = req.params.id;
+const query = {_id: new ObjectId(id)}
+const result = await menuCollection.deleteOne(query);
+res.send(result);
+})
 
 
   } finally {
